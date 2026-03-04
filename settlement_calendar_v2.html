@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>结算日历</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  :root {
+    --gold: #F5A623;
+    --gold-light: #FFF8EC;
+    --blue: #1677FF;
+    --green: #00B96B;
+    --red: #FF4D4F;
+    --bg: #F5F6FA;
+    --card: #FFFFFF;
+    --text-primary: #1A1A2E;
+    --text-secondary: #8A8FA8;
+    --text-muted: #BEC2D4;
+    --border: #ECEEF5;
+    --radius: 16px;
+    --shadow: 0 2px 16px rgba(0,0,0,0.06);
+  }
+
+  body {
+    font-family: 'DM Sans', -apple-system, 'PingFang SC', sans-serif;
+    background: var(--bg);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 20px;
+  }
+
+  .phone {
+    width: 390px;
+    background: var(--bg);
+    border-radius: 40px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+    position: relative;
+  }
+
+  /* Header */
+  .header {
+    background: var(--card);
+    padding: 20px 20px 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .header-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+
+  .header-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .close-btn {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--bg);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    color: var(--text-secondary);
+    font-size: 14px;
+  }
+
+  /* Notice banner */
+  .notice {
+    background: #FFFBF0;
+    border: 1px solid #FFE7A0;
+    border-radius: 10px;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+    cursor: pointer;
+  }
+  .notice-icon { color: var(--gold); font-size: 14px; flex-shrink: 0; }
+  .notice-text { font-size: 12px; color: #8A6A00; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .notice-arrow { color: #C8A830; font-size: 12px; flex-shrink: 0; }
+
+  /* Tab switch */
+  .tab-bar {
+    display: flex;
+    gap: 4px;
+    padding: 4px;
+    background: var(--bg);
+    border-radius: 10px;
+    margin-bottom: 16px;
+  }
+  .tab {
+    flex: 1;
+    text-align: center;
+    padding: 7px 0;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .tab.active {
+    background: var(--card);
+    color: var(--text-primary);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  }
+
+  /* Calendar nav */
+  .cal-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .cal-nav-btn {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    color: var(--text-secondary);
+    font-size: 16px;
+    transition: background 0.15s;
+  }
+  .cal-nav-btn:hover { background: var(--bg); }
+  .cal-nav-btn.disabled { opacity: 0.3; cursor: default; }
+  .cal-month {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  /* Calendar grid */
+  .cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+    margin-bottom: 4px;
+  }
+  .cal-day-header {
+    text-align: center;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-muted);
+    padding: 4px 0;
+  }
+  .cal-day {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 6px 2px;
+    cursor: pointer;
+    border-radius: 10px;
+    transition: background 0.15s;
+    min-height: 52px;
+  }
+  .cal-day:hover { background: var(--bg); }
+  .cal-day.other-month .day-num { color: var(--text-muted); }
+  .cal-day.today .day-num {
+    background: var(--blue);
+    color: #fff;
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .cal-day.selected {
+    background: #EEF4FF;
+  }
+  .cal-day.selected .day-num {
+    background: var(--blue);
+    color: #fff;
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .day-num {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-primary);
+    width: 26px; height: 26px;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  /* Day dots - settled / pending */
+  .day-dots {
+    display: flex;
+    gap: 2px;
+    margin-top: 3px;
+    height: 14px;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+  }
+  .dot-green { background: var(--green); }
+  .dot-gold { background: var(--gold); }
+  .dot-gray { background: var(--text-muted); }
+
+  /* Expand row */
+  .cal-expand {
+    display: flex;
+    justify-content: center;
+    padding: 6px 0 12px;
+    cursor: pointer;
+    color: var(--text-secondary);
+    font-size: 16px;
+  }
+
+  /* Summary card */
+  .summary-card {
+    background: linear-gradient(135deg, #1677FF 0%, #0050D0 100%);
+    border-radius: 0;
+    margin: 0 -20px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .summary-left {}
+  .summary-label { font-size: 12px; color: rgba(255,255,255,0.7); margin-bottom: 4px; }
+  .summary-amount { font-size: 26px; font-weight: 600; color: #fff; letter-spacing: -0.5px; }
+  .summary-amount span { font-size: 14px; font-weight: 400; margin-right: 2px; }
+  .summary-right {
+    text-align: right;
+  }
+  .summary-sub-label { font-size: 11px; color: rgba(255,255,255,0.6); margin-bottom: 4px; }
+  .summary-sub-amount { font-size: 15px; font-weight: 500; color: rgba(255,255,255,0.9); }
+
+  /* Content area */
+  .content {
+    background: var(--bg);
+    padding: 16px 20px;
+    max-height: 460px;
+    overflow-y: auto;
+  }
+
+  .section-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .channel-card {
+    background: var(--card);
+    border-radius: var(--radius);
+    margin-bottom: 10px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    transition: transform 0.15s;
+  }
+  .channel-card:active { transform: scale(0.99); }
+
+  .channel-main {
+    display: flex;
+    align-items: center;
+    padding: 14px 16px;
+    cursor: pointer;
+    gap: 12px;
+  }
+
+  .channel-logo {
+    width: 40px; height: 40px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+
+  .channel-info { flex: 1; min-width: 0; }
+  .channel-name { font-size: 15px; font-weight: 600; color: var(--text-primary); margin-bottom: 3px; }
+  .channel-meta { font-size: 12px; color: var(--text-secondary); display: flex; align-items: center; gap: 6px; }
+
+  .channel-amount-wrap { text-align: right; }
+  .channel-amount {
+    font-size: 17px;
+    font-weight: 600;
+    margin-bottom: 3px;
+  }
+  .channel-amount.green { color: var(--green); }
+  .channel-amount.pending { color: var(--text-muted); }
+
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 500;
+  }
+  .badge-settled { background: #E8FAF2; color: var(--green); }
+  .badge-pending { background: #F5F6FA; color: var(--text-secondary); }
+  .badge-processing { background: #FFF8EC; color: var(--gold); }
+
+  /* Detail expand */
+  .detail-panel {
+    border-top: 1px solid var(--border);
+    padding: 12px 16px;
+    background: #FAFBFF;
+    display: none;
+  }
+  .detail-panel.show { display: block; }
+
+  .detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 7px 0;
+    border-bottom: 1px dashed var(--border);
+  }
+  .detail-row:last-child { border-bottom: none; }
+  .detail-label { font-size: 12px; color: var(--text-secondary); }
+  .detail-value { font-size: 12px; font-weight: 500; color: var(--text-primary); }
+  .detail-value.green { color: var(--green); }
+
+  .expand-arrow {
+    transition: transform 0.2s;
+    color: var(--text-muted);
+    font-size: 12px;
+  }
+  .expand-arrow.open { transform: rotate(180deg); }
+
+  /* Pending section */
+  .pending-card {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+    box-shadow: var(--shadow);
+    opacity: 0.7;
+  }
+  .pending-card .channel-logo { opacity: 0.6; }
+  .pending-card .channel-name { color: var(--text-secondary); }
+
+  /* Empty state */
+  .empty-state {
+    text-align: center;
+    padding: 30px 0;
+    color: var(--text-muted);
+    font-size: 13px;
+  }
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="header">
+    <div class="header-top">
+      <div class="header-title">结算日历</div>
+      <div class="close-btn">✕</div>
+    </div>
+
+    <div class="notice">
+      <span class="notice-icon">ⓘ</span>
+      <span class="notice-text">月度账单异常公告：尊敬的加盟商，您好：为了便...</span>
+      <span class="notice-arrow">›</span>
+    </div>
+
+    <!-- Tab -->
+    <div class="tab-bar">
+      <div class="tab" onclick="switchTab('settle')">结算日视图</div>
+      <div class="tab active" onclick="switchTab('txn')">交易日视图</div>
+    </div>
+
+    <!-- Calendar nav -->
+    <div class="cal-nav">
+      <div class="cal-nav-btn" onclick="prevMonth()">‹</div>
+      <div class="cal-month" id="calMonth">2026年3月</div>
+      <div class="cal-nav-btn disabled">›</div>
+    </div>
+
+    <!-- Calendar -->
+    <div class="cal-grid">
+      <div class="cal-day-header">日</div>
+      <div class="cal-day-header">一</div>
+      <div class="cal-day-header">二</div>
+      <div class="cal-day-header">三</div>
+      <div class="cal-day-header">四</div>
+      <div class="cal-day-header">五</div>
+      <div class="cal-day-header">六</div>
+    </div>
+    <div class="cal-grid" id="calBody"></div>
+    <div class="cal-expand">⌄</div>
+  </div>
+
+  <!-- Summary -->
+  <div class="summary-card" id="summaryCard">
+    <div class="summary-left">
+      <div class="summary-label" id="summaryLabel">3月3日 交易到账汇总</div>
+      <div class="summary-amount"><span>¥</span><span id="summaryTotal">12,167.12</span></div>
+    </div>
+    <div class="summary-right">
+      <div class="summary-sub-label">待结算渠道</div>
+      <div class="summary-sub-amount" id="summaryPending">2 个</div>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div class="content" id="mainContent"></div>
+</div>
+
+<script>
+const txnData = {
+  '2026-3-3': {
+    settled: [
+      {
+        name: '现场点单',
+        icon: '🏪',
+        iconBg: '#FFF0F0',
+        txnAmount: '+¥5,160.34',
+        accountDate: '2026-03-03',
+        billPeriod: '2026-03-03 至 2026-03-03',
+        settled: true,
+        details: [
+          { label: '订单渠道', value: '现场点单' },
+          { label: '交易发生日', value: '2026-03-03' },
+          { label: '是否已结算', value: '✅ 已结算' },
+          { label: '资金到账日期', value: '2026-03-03' },
+          { label: '账单周期', value: '2026-03-03 至 2026-03-03' },
+          { label: '到账金额', value: '+¥5,160.34', isAmount: true },
+        ]
+      },
+      {
+        name: '饿了么',
+        icon: '🟣',
+        iconBg: '#F5F0FF',
+        txnAmount: '+¥7,006.78',
+        accountDate: '2026-03-03',
+        billPeriod: '2026-02-28 至 2026-02-28',
+        settled: true,
+        details: [
+          { label: '订单渠道', value: '饿了么' },
+          { label: '交易发生日', value: '2026-03-03' },
+          { label: '是否已结算', value: '✅ 已结算' },
+          { label: '资金到账日期', value: '2026-03-03' },
+          { label: '账单周期', value: '2026-02-28 至 2026-02-28' },
+          { label: '到账金额', value: '+¥7,006.78', isAmount: true },
+        ]
+      }
+    ],
+    pending: [
+      { name: '美团外卖', icon: '🛵', iconBg: '#FFFBE6', estDate: '预计 03-05 到账' },
+      { name: '美团团购', icon: '🟡', iconBg: '#FFF8E0', estDate: '预计 03-06 到账' },
+    ]
+  },
+  '2026-3-2': {
+    settled: [
+      {
+        name: '美团外卖',
+        icon: '🛵',
+        iconBg: '#FFFBE6',
+        txnAmount: '+¥4,320.00',
+        accountDate: '2026-03-04',
+        billPeriod: '2026-03-02 至 2026-03-02',
+        settled: true,
+        details: [
+          { label: '订单渠道', value: '美团外卖' },
+          { label: '交易发生日', value: '2026-03-02' },
+          { label: '是否已结算', value: '✅ 已结算' },
+          { label: '资金到账日期', value: '2026-03-04' },
+          { label: '账单周期', value: '2026-03-02 至 2026-03-02' },
+          { label: '到账金额', value: '+¥4,320.00', isAmount: true },
+        ]
+      }
+    ],
+    pending: [
+      { name: '现场点单', icon: '🏪', iconBg: '#FFF0F0', estDate: '预计 03-05 到账' },
+    ]
+  },
+  '2026-3-1': {
+    settled: [
+      {
+        name: '饿了么',
+        icon: '🟣',
+        iconBg: '#F5F0FF',
+        txnAmount: '+¥3,891.50',
+        accountDate: '2026-03-03',
+        billPeriod: '2026-03-01 至 2026-03-01',
+        settled: true,
+        details: [
+          { label: '订单渠道', value: '饿了么' },
+          { label: '交易发生日', value: '2026-03-01' },
+          { label: '是否已结算', value: '✅ 已结算' },
+          { label: '资金到账日期', value: '2026-03-03' },
+          { label: '账单周期', value: '2026-03-01 至 2026-03-01' },
+          { label: '到账金额', value: '+¥3,891.50', isAmount: true },
+        ]
+      }
+    ],
+    pending: []
+  }
+};
+
+// Dots config per day
+const dotMap = {
+  1: ['green'], 2: ['green','gold'], 3: ['green','green','gold','gold'],
+  4: ['gold'], 5: ['gold'], 7: ['gray']
+};
+
+let selectedDay = 3;
+let currentMonth = 3;
+
+function buildCalendar() {
+  const body = document.getElementById('calBody');
+  // March 2026 starts on Sunday (0)
+  // days: 1 Mar = Sunday
+  const days = [];
+  // prev month fill
+  // 1 Mar 2026 = Sunday → no fill
+  for (let d = 1; d <= 31; d++) {
+    days.push({ d, cur: true });
+  }
+  // next month fill to complete grid (31 days, starts Sun → 5 rows = 35 cells, need 4 more)
+  for (let d = 1; d <= 4; d++) {
+    days.push({ d, cur: false });
+  }
+
+  body.innerHTML = days.map(({ d, cur }) => {
+    const isToday = cur && d === 3;
+    const isSel = cur && d === selectedDay;
+    const dots = cur && dotMap[d] ? dotMap[d] : [];
+    const dotHtml = dots.map(c => `<div class="dot dot-${c}"></div>`).join('');
+    return `
+      <div class="cal-day ${!cur ? 'other-month' : ''} ${isToday && !isSel ? 'today' : ''} ${isSel ? 'selected' : ''}"
+           onclick="${cur ? `selectDay(${d})` : ''}">
+        <div class="day-num">${d}</div>
+        <div class="day-dots">${dotHtml}</div>
+      </div>`;
+  }).join('');
+}
+
+function selectDay(d) {
+  selectedDay = d;
+  buildCalendar();
+  renderContent();
+}
+
+function renderContent() {
+  const key = `2026-${currentMonth}-${selectedDay}`;
+  const data = txnData[key];
+  const dateLabel = `${currentMonth}月${selectedDay}日 交易到账汇总`;
+  document.getElementById('summaryLabel').textContent = dateLabel;
+
+  if (!data) {
+    document.getElementById('summaryTotal').textContent = '0.00';
+    document.getElementById('summaryPending').textContent = '0 个';
+    document.getElementById('mainContent').innerHTML = `<div class="empty-state">📭 当日暂无交易数据</div>`;
+    return;
+  }
+
+  // calc total
+  const total = data.settled.reduce((sum, c) => {
+    const v = parseFloat(c.txnAmount.replace(/[^0-9.]/g, ''));
+    return sum + v;
+  }, 0);
+  document.getElementById('summaryTotal').textContent = total.toLocaleString('zh-CN', { minimumFractionDigits: 2 });
+  document.getElementById('summaryPending').textContent = `${data.pending.length} 个`;
+
+  let html = '';
+
+  if (data.settled.length) {
+    html += `<div class="section-title">已结算</div>`;
+    data.settled.forEach((ch, i) => {
+      html += `
+        <div class="channel-card">
+          <div class="channel-main" onclick="toggleDetail(${i})">
+            <div class="channel-logo" style="background:${ch.iconBg}">${ch.icon}</div>
+            <div class="channel-info">
+              <div class="channel-name">${ch.name}</div>
+              <div class="channel-meta">
+                <span class="status-badge badge-settled">● 已结算</span>
+                <span>到账 ${ch.accountDate}</span>
+              </div>
+            </div>
+            <div class="channel-amount-wrap">
+              <div class="channel-amount green">${ch.txnAmount}</div>
+              <div style="display:flex;justify-content:flex-end">
+                <span class="expand-arrow" id="arrow-${i}">▾</span>
+              </div>
+            </div>
+          </div>
+          <div class="detail-panel" id="detail-${i}">
+            ${ch.details.map(r => `
+              <div class="detail-row">
+                <span class="detail-label">${r.label}</span>
+                <span class="detail-value ${r.isAmount ? 'green' : ''}">${r.value}</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>`;
+    });
+  }
+
+  if (data.pending.length) {
+    html += `<div class="section-title" style="margin-top:16px">未结算</div>`;
+    data.pending.forEach(ch => {
+      html += `
+        <div class="pending-card">
+          <div class="channel-logo" style="background:${ch.iconBg}">${ch.icon}</div>
+          <div class="channel-info">
+            <div class="channel-name">${ch.name}</div>
+            <div class="channel-meta">
+              <span class="status-badge badge-pending">○ 待结算</span>
+              <span>${ch.estDate}</span>
+            </div>
+          </div>
+          <div style="font-size:13px;color:var(--text-muted)">待结算</div>
+        </div>`;
+    });
+  }
+
+  document.getElementById('mainContent').innerHTML = html;
+}
+
+function toggleDetail(i) {
+  const panel = document.getElementById(`detail-${i}`);
+  const arrow = document.getElementById(`arrow-${i}`);
+  panel.classList.toggle('show');
+  arrow.classList.toggle('open');
+}
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach((t, i) => {
+    t.classList.toggle('active', (tab === 'txn' && i === 1) || (tab === 'settle' && i === 0));
+  });
+}
+
+function prevMonth() {
+  // demo only
+}
+
+buildCalendar();
+renderContent();
+</script>
+</body>
+</html>
