@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>霸王钱包</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --red: #C8272C;
+  --red-light: #fff0f0;
+  --red-hover: #a81e22;
+  --text-primary: #1a1a1a;
+  --text-secondary: #666;
+  --text-muted: #999;
+  --border: #e8e8e8;
+  --bg: #f7f7f7;
+  --card: #fff;
+  --radius: 8px;
+}
+
+body {
+  font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  background: var(--bg);
+  color: var(--text-primary);
+  min-height: 100vh;
+}
+
+/* ── Header ── */
+.header {
+  background: #fff;
+  border-bottom: 1px solid var(--border);
+  padding: 0 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 60px;
+  position: sticky;
+  top: 0;
+  z-index: 200;
+}
+.logo-area { display: flex; align-items: center; gap: 16px; }
+.logo-img {
+  width: 40px; height: 40px;
+  background: var(--red);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-weight: 900; font-size: 14px;
+}
+.logo-divider { width: 1px; height: 24px; background: #ddd; }
+.logo-text { font-size: 18px; font-weight: 700; color: var(--text-primary); letter-spacing: 1px; }
+.header-nav { font-size: 14px; color: var(--text-secondary); cursor: pointer; }
+.header-nav:hover { color: var(--red); }
+
+/* ── Main ── */
+.main { padding: 24px 40px; max-width: 1300px; margin: 0 auto; }
+
+/* ── Top cards ── */
+.top-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.card {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 24px;
+  border: 1px solid var(--border);
+}
+
+/* Balance card */
+.balance-label { font-size: 13px; color: var(--text-secondary); margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+.balance-label svg { cursor: pointer; }
+.balance-amount { font-size: 28px; font-weight: 700; color: var(--red); letter-spacing: 1px; margin-bottom: 8px; }
+.balance-sub-label { font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
+.balance-sub-amount { font-size: 20px; font-weight: 600; color: var(--red); }
+.balance-actions { display: flex; gap: 10px; position: absolute; top: 24px; right: 24px; }
+.btn-primary {
+  background: var(--red); color: #fff;
+  border: none; border-radius: 6px;
+  padding: 8px 20px; font-size: 14px; font-weight: 500;
+  cursor: pointer; transition: background 0.15s;
+}
+.btn-primary:hover { background: var(--red-hover); }
+.btn-outline {
+  background: #fff; color: var(--text-primary);
+  border: 1px solid var(--border); border-radius: 6px;
+  padding: 8px 20px; font-size: 14px; font-weight: 500;
+  cursor: pointer; transition: all 0.15s;
+}
+.btn-outline:hover { border-color: var(--red); color: var(--red); }
+.balance-card-inner { position: relative; }
+
+/* Store card */
+.store-top { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+.store-avatar {
+  width: 44px; height: 44px; border-radius: 50%;
+  background: var(--red); display: flex; align-items: center; justify-content: center;
+  color: #fff; font-size: 18px;
+}
+.store-name { font-size: 16px; font-weight: 600; }
+.store-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+.switch-store { margin-left: auto; font-size: 13px; color: var(--red); cursor: pointer; display: flex; align-items: center; gap: 4px; }
+.store-info { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+.store-info-item { }
+.store-info-label { font-size: 12px; color: var(--text-muted); margin-bottom: 2px; }
+.store-info-value { font-size: 13px; color: var(--text-primary); font-weight: 500; }
+
+/* ── Tab bar ── */
+.tab-section { margin-bottom: 0; }
+.tab-bar {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid var(--border);
+  margin-bottom: 0;
+}
+.tab {
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.tab:hover { color: var(--red); }
+.tab.active { color: var(--red); border-bottom-color: var(--red); font-weight: 600; }
+
+/* ── Bill section ── */
+.bill-section {
+  background: var(--card);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+.bill-header {
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+}
+.bill-title { font-size: 16px; font-weight: 600; }
+.bill-actions { display: flex; gap: 10px; align-items: center; }
+
+/* Filters */
+.filters {
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+  background: #fafafa;
+}
+.filter-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.filter-label { font-size: 13px; color: var(--text-secondary); white-space: nowrap; }
+.filter-input {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 13px;
+  color: var(--text-primary);
+  background: #fff;
+  outline: none;
+  font-family: inherit;
+}
+.filter-input:focus { border-color: var(--red); }
+.filter-select {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 28px 6px 10px;
+  font-size: 13px;
+  color: var(--text-primary);
+  background: #fff;
+  outline: none;
+  font-family: inherit;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23999'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  cursor: pointer;
+  min-width: 140px;
+}
+.date-range {
+  display: flex; align-items: center; gap: 6px;
+}
+.date-range input {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 13px;
+  outline: none;
+  font-family: inherit;
+  width: 120px;
+}
+.date-range input:focus { border-color: var(--red); }
+.date-range span { color: var(--text-muted); font-size: 13px; }
+
+.summary-bar {
+  padding: 10px 24px;
+  background: #fff9f9;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  gap: 32px;
+  font-size: 13px;
+}
+.summary-item { color: var(--text-secondary); }
+.summary-item span { font-weight: 600; color: var(--text-primary); }
+.summary-item.income span { color: #00a854; }
+.summary-item.expense span { color: var(--red); }
+
+/* Table */
+.table-wrap { overflow-x: auto; }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+thead tr {
+  background: #fafafa;
+  border-bottom: 1px solid var(--border);
+}
+thead th {
+  padding: 12px 16px;
+  text-align: left;
+  font-weight: 600;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+thead th .sort-icon { margin-left: 4px; color: #ccc; cursor: pointer; }
+thead th .sort-icon.active { color: var(--red); }
+tbody tr {
+  border-bottom: 1px solid #f5f5f5;
+  transition: background 0.1s;
+}
+tbody tr:hover { background: #fafafa; }
+tbody tr:last-child { border-bottom: none; }
+td {
+  padding: 13px 16px;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+.td-type { display: flex; align-items: center; gap: 8px; }
+.type-dot {
+  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+}
+.type-income { background: #00a854; }
+.type-expense { background: var(--red); }
+.type-transfer { background: #1677ff; }
+.amount-income { color: #00a854; font-weight: 600; }
+.amount-expense { color: var(--red); font-weight: 600; }
+.balance-col { font-weight: 500; }
+.order-id { color: var(--text-muted); font-size: 12px; font-family: monospace; }
+
+/* Pagination */
+.pagination {
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid var(--border);
+}
+.page-info { font-size: 13px; color: var(--text-muted); }
+.page-btns { display: flex; gap: 6px; }
+.page-btn {
+  width: 30px; height: 30px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  background: #fff;
+  transition: all 0.15s;
+}
+.page-btn:hover { border-color: var(--red); color: var(--red); }
+.page-btn.active { background: var(--red); color: #fff; border-color: var(--red); }
+
+/* ── Modal: 下载网商账单 ── */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: 500;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(2px);
+}
+.modal-overlay.show { display: flex; }
+.modal {
+  background: #fff;
+  border-radius: 12px;
+  width: 480px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  overflow: hidden;
+  animation: modalIn 0.2s ease;
+}
+@keyframes modalIn {
+  from { transform: scale(0.95) translateY(10px); opacity: 0; }
+  to   { transform: scale(1) translateY(0); opacity: 1; }
+}
+.modal-header {
+  padding: 20px 24px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.modal-title { font-size: 17px; font-weight: 700; }
+.modal-close {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: #f5f5f5;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--text-secondary);
+  border: none;
+}
+.modal-close:hover { background: #eee; }
+.modal-body { padding: 20px 24px; }
+.modal-desc {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 20px;
+  line-height: 1.6;
+  background: #fff9f0;
+  border-left: 3px solid #f5a623;
+  padding: 10px 12px;
+  border-radius: 0 6px 6px 0;
+}
+.form-item { margin-bottom: 16px; }
+.form-label { font-size: 13px; font-weight: 500; color: var(--text-primary); margin-bottom: 7px; }
+.form-label .required { color: var(--red); margin-left: 2px; }
+.form-date-range {
+  display: flex; align-items: center; gap: 8px;
+}
+.form-date-range input {
+  flex: 1;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 9px 12px;
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.form-date-range input:focus { border-color: var(--red); }
+.form-date-range span { color: var(--text-muted); }
+.form-hint { font-size: 12px; color: var(--text-muted); margin-top: 5px; }
+
+.format-options { display: flex; gap: 10px; }
+.format-opt {
+  flex: 1;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 10px;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.15s;
+}
+.format-opt:hover { border-color: var(--red); }
+.format-opt.selected { border-color: var(--red); background: var(--red-light); }
+.format-icon { font-size: 22px; margin-bottom: 4px; }
+.format-name { font-size: 13px; font-weight: 500; color: var(--text-primary); }
+.format-desc { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+.fields-select {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.field-checkbox {
+  display: flex; align-items: center; gap: 7px;
+  font-size: 13px; cursor: pointer;
+  padding: 7px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  transition: all 0.15s;
+  user-select: none;
+}
+.field-checkbox:hover { border-color: var(--red); }
+.field-checkbox input { accent-color: var(--red); width: 14px; height: 14px; }
+.field-checkbox.checked { background: var(--red-light); border-color: #f5bcbc; }
+
+.modal-footer {
+  padding: 16px 24px;
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  border-top: 1px solid var(--border);
+  background: #fafafa;
+}
+.btn-cancel {
+  padding: 9px 20px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: #fff;
+  font-size: 14px;
+  cursor: pointer;
+  font-family: inherit;
+  color: var(--text-secondary);
+  transition: all 0.15s;
+}
+.btn-cancel:hover { border-color: #999; color: var(--text-primary); }
+.btn-confirm {
+  padding: 9px 24px;
+  border: none;
+  border-radius: 6px;
+  background: var(--red);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s;
+  display: flex; align-items: center; gap: 6px;
+}
+.btn-confirm:hover { background: var(--red-hover); }
+
+/* Download success toast */
+.toast {
+  position: fixed;
+  bottom: 32px; left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: #1a1a1a;
+  color: #fff;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  opacity: 0;
+  transition: all 0.3s;
+  z-index: 600;
+  pointer-events: none;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* new badge */
+.new-tag {
+  display: inline-block;
+  background: #fff3e0;
+  color: #e65100;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 4px;
+  margin-left: 5px;
+  vertical-align: middle;
+}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="logo-area">
+    <div class="logo-img">茶</div>
+    <div class="logo-divider"></div>
+    <div class="logo-text">霸王钱包</div>
+  </div>
+  <div class="header-nav">首页</div>
+</div>
+
+<div class="main">
+
+  <!-- Top cards -->
+  <div class="top-cards">
+    <!-- Balance -->
+    <div class="card">
+      <div class="balance-card-inner">
+        <div class="balance-label">
+          账户余额
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#999" stroke-width="1.2"/><path d="M5 5.5C5 4.4 5.9 3.5 7 3.5s2 .9 2 2c0 1.5-2 2-2 2.5" stroke="#999" stroke-width="1.2" stroke-linecap="round"/><circle cx="7" cy="10" r=".7" fill="#999"/></svg>
+        </div>
+        <div class="balance-amount">** **</div>
+        <div class="balance-sub-label">其中，可提现余额</div>
+        <div class="balance-sub-amount">** **</div>
+        <div class="balance-actions">
+          <button class="btn-primary">充值</button>
+          <button class="btn-outline">提现</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Store -->
+    <div class="card">
+      <div class="store-top">
+        <div class="store-avatar">🍵</div>
+        <div>
+          <div class="store-name">辽宁鞍山新玛特店</div>
+          <div class="store-sub">铁东区峰水奶茶坊（个体工商户）</div>
+        </div>
+        <div class="switch-store">↩ 切换门店</div>
+      </div>
+      <div class="store-info">
+        <div class="store-info-item">
+          <div class="store-info-label">管理员</div>
+          <div class="store-info-value">田峰</div>
+        </div>
+        <div class="store-info-item">
+          <div class="store-info-label">管理手机</div>
+          <div class="store-info-value">156****5777</div>
+        </div>
+        <div class="store-info-item">
+          <div class="store-info-label">绑定账户</div>
+          <div class="store-info-value">***2546</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bill section -->
+  <div class="bill-section">
+    <!-- Tab bar -->
+    <div class="tab-bar">
+      <div class="tab active" onclick="switchTab(this)">全部账单</div>
+      <div class="tab" onclick="switchTab(this)">收入明细</div>
+      <div class="tab" onclick="switchTab(this)">支出明细</div>
+      <div class="tab" onclick="switchTab(this)">
+        网商账单流水
+        <span class="new-tag">新</span>
+      </div>
+    </div>
+
+    <!-- Bill header -->
+    <div class="bill-header">
+      <div class="bill-title" id="billTitle">全部账单</div>
+      <div class="bill-actions">
+        <button class="btn-outline" onclick="openDownloadModal()" id="exportWangshang" style="display:none;color:var(--red);border-color:var(--red)">
+          ⬇ 下载网商账单流水
+        </button>
+        <button class="btn-primary" onclick="showToast('导出记录中...')">导出记录</button>
+        <button class="btn-outline" onclick="showToast('正在生成报表明细...')">⬇ 导出报表明细</button>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters">
+      <div class="filter-item">
+        <span class="filter-label">交易时间</span>
+        <div class="date-range">
+          <input type="date" value="2026-03-01">
+          <span>至</span>
+          <input type="date" value="2026-03-31">
+        </div>
+      </div>
+      <div class="filter-item">
+        <span class="filter-label">交易渠道</span>
+        <select class="filter-select">
+          <option>请选择交易渠道</option>
+          <option>美团外卖</option>
+          <option>饿了么</option>
+          <option>现场点单</option>
+          <option>网商银行</option>
+        </select>
+      </div>
+      <div class="filter-item">
+        <span class="filter-label">交易类型</span>
+        <select class="filter-select">
+          <option>请选择交易类型</option>
+          <option>收入</option>
+          <option>支出</option>
+          <option>退款</option>
+          <option>调拨退款</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Summary bar -->
+    <div class="summary-bar">
+      <div class="summary-item income">收入：<span>¥100,153.38</span></div>
+      <div class="summary-item expense">支出：<span>¥44,591.52</span></div>
+      <div class="summary-item">净收入：<span>¥55,561.86</span></div>
+      <div class="summary-item">共 <span>128</span> 笔</div>
+    </div>
+
+    <!-- Table -->
+    <div class="table-wrap" id="tableWrap">
+      <table>
+        <thead>
+          <tr>
+            <th>交易类型</th>
+            <th>交易时间 <span class="sort-icon active">↕</span></th>
+            <th>交易对方</th>
+            <th>账单日</th>
+            <th>订单编号 | 账单编号</th>
+            <th>交易金额（元）<span class="sort-icon">↕</span></th>
+            <th>余额（元）</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+
+    <!-- Wangshang table (hidden by default) -->
+    <div id="wangshangTable" style="display:none">
+      <div style="padding:14px 24px;background:#fff9f0;border-bottom:1px solid var(--border);font-size:13px;color:#8a5a00;display:flex;align-items:center;gap:8px">
+        <span>ℹ</span>
+        网商账单流水为网商银行结算数据，含每笔资金到账明细，可用于与门店收支核对和财务对账。
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>流水号</th>
+              <th>交易时间</th>
+              <th>交易类型</th>
+              <th>交易对方户名</th>
+              <th>交易对方账号</th>
+              <th>收入金额（元）</th>
+              <th>支出金额（元）</th>
+              <th>账户余额（元）</th>
+              <th>备注</th>
+            </tr>
+          </thead>
+          <tbody id="wangshangBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="pagination">
+      <div class="page-info">共 128 条，每页 10 条</div>
+      <div class="page-btns">
+        <div class="page-btn">‹</div>
+        <div class="page-btn active">1</div>
+        <div class="page-btn">2</div>
+        <div class="page-btn">3</div>
+        <div class="page-btn">...</div>
+        <div class="page-btn">13</div>
+        <div class="page-btn">›</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Download Modal -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeOnOverlay(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">下载网商账单流水</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-desc">
+        📋 网商账单流水包含网商银行每笔资金的收支明细，可用于财务对账、经营分析及税务凭证。
+      </div>
+
+      <div class="form-item">
+        <div class="form-label">账单时间段<span class="required">*</span></div>
+        <div class="form-date-range">
+          <input type="date" value="2026-03-01" id="dlStartDate">
+          <span>至</span>
+          <input type="date" value="2026-03-31" id="dlEndDate">
+        </div>
+        <div class="form-hint">最多可查询最近 12 个月内的账单，单次最长跨度 3 个月</div>
+      </div>
+
+      <div class="form-item">
+        <div class="form-label">文件格式<span class="required">*</span></div>
+        <div class="format-options">
+          <div class="format-opt selected" onclick="selectFormat(this)">
+            <div class="format-icon">📊</div>
+            <div class="format-name">Excel (.xlsx)</div>
+            <div class="format-desc">适合财务人员分析</div>
+          </div>
+          <div class="format-opt" onclick="selectFormat(this)">
+            <div class="format-icon">📄</div>
+            <div class="format-name">CSV (.csv)</div>
+            <div class="format-desc">适合系统导入对账</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-item">
+        <div class="form-label">包含字段</div>
+        <div class="fields-select">
+          <label class="field-checkbox checked"><input type="checkbox" checked> 流水号</label>
+          <label class="field-checkbox checked"><input type="checkbox" checked> 交易时间</label>
+          <label class="field-checkbox checked"><input type="checkbox" checked> 交易类型</label>
+          <label class="field-checkbox checked"><input type="checkbox" checked> 收入/支出金额</label>
+          <label class="field-checkbox checked"><input type="checkbox" checked> 交易对方户名</label>
+          <label class="field-checkbox checked"><input type="checkbox" checked> 账户余额</label>
+          <label class="field-checkbox"><input type="checkbox"> 交易对方账号</label>
+          <label class="field-checkbox"><input type="checkbox"> 备注</label>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal()">取消</button>
+      <button class="btn-confirm" onclick="confirmDownload()">
+        ⬇ 确认下载
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── Sample data ──
+const txnData = [
+  { type:'收入', typeCls:'income', time:'2026-03-31 16:42:18', party:'美团外卖结算', billDay:'2026-03-31', orderId:'MT20260331001234', amount:'+3,218.50', balance:'18,953.78' },
+  { type:'支出', typeCls:'expense', time:'2026-03-31 14:01:05', party:'调拨退款-订货助手', billDay:'2026-03-31', orderId:'AT20260331009981', amount:'-12,430.00', balance:'15,735.28' },
+  { type:'收入', typeCls:'income', time:'2026-03-30 17:22:44', party:'饿了么结算', billDay:'2026-03-30', orderId:'ELM20260330008876', amount:'+5,660.20', balance:'28,165.28' },
+  { type:'收入', typeCls:'income', time:'2026-03-30 09:15:32', party:'现场点单结算', billDay:'2026-03-30', orderId:'POS20260330003312', amount:'+2,100.00', balance:'22,505.08' },
+  { type:'支出', typeCls:'expense', time:'2026-03-29 14:00:00', party:'自动提现', billDay:'2026-03-29', orderId:'WD20260329000441', amount:'-8,000.00', balance:'20,405.08' },
+  { type:'收入', typeCls:'income', time:'2026-03-29 11:30:20', party:'美团团购结算', billDay:'2026-03-29', orderId:'MTG20260329007723', amount:'+4,320.00', balance:'28,405.08' },
+  { type:'收入', typeCls:'income', time:'2026-03-28 16:55:10', party:'网商银行到账', billDay:'2026-03-28', orderId:'WS20260328002231', amount:'+7,006.78', balance:'24,085.08' },
+  { type:'支出', typeCls:'expense', time:'2026-03-27 14:00:00', party:'自动提现', billDay:'2026-03-27', orderId:'WD20260327000118', amount:'-5,000.00', balance:'17,078.30' },
+];
+
+const wangshangData = [
+  { id:'WS2026033100892', time:'2026-03-31 09:12:33', type:'结算入账', party:'霸王茶姬供应链', account:'622****2546', income:'3,218.50', expense:'', balance:'18,953.78', remark:'美团外卖3月第4周结算' },
+  { id:'WS2026033100751', time:'2026-03-31 08:55:10', type:'退款出账', party:'订货助手平台', account:'620****1138', income:'', expense:'12,430.00', balance:'15,735.28', remark:'调拨退款-2026-03批次' },
+  { id:'WS2026033000623', time:'2026-03-30 17:05:44', type:'结算入账', party:'霸王茶姬供应链', account:'622****2546', income:'5,660.20', expense:'', balance:'28,165.28', remark:'饿了么3月第4周结算' },
+  { id:'WS2026033000512', time:'2026-03-30 09:02:18', type:'结算入账', party:'霸王茶姬供应链', account:'622****2546', income:'2,100.00', expense:'', balance:'22,505.08', remark:'现场点单日结' },
+  { id:'WS2026032900334', time:'2026-03-29 14:00:05', type:'提现出账', party:'中国民生银行', account:'621****0022', income:'', expense:'8,000.00', balance:'20,405.08', remark:'自动提现' },
+];
+
+function renderTable() {
+  const tbody = document.getElementById('tableBody');
+  tbody.innerHTML = txnData.map(r => `
+    <tr>
+      <td><div class="td-type"><div class="type-dot type-${r.typeCls}"></div>${r.type}</div></td>
+      <td>${r.time}</td>
+      <td>${r.party}</td>
+      <td>${r.billDay}</td>
+      <td class="order-id">${r.orderId}</td>
+      <td class="${r.typeCls === 'income' ? 'amount-income' : 'amount-expense'}">${r.amount}</td>
+      <td class="balance-col">${r.balance}</td>
+    </tr>`).join('');
+}
+
+function renderWangshang() {
+  const tbody = document.getElementById('wangshangBody');
+  tbody.innerHTML = wangshangData.map(r => `
+    <tr>
+      <td class="order-id">${r.id}</td>
+      <td>${r.time}</td>
+      <td><div class="td-type"><div class="type-dot ${r.income ? 'type-income' : 'type-expense'}"></div>${r.type}</div></td>
+      <td>${r.party}</td>
+      <td class="order-id">${r.account}</td>
+      <td class="amount-income">${r.income ? '¥'+r.income : '-'}</td>
+      <td class="amount-expense">${r.expense ? '¥'+r.expense : '-'}</td>
+      <td class="balance-col">¥${r.balance}</td>
+      <td style="color:var(--text-muted);font-size:12px">${r.remark}</td>
+    </tr>`).join('');
+}
+
+let currentTab = 0;
+function switchTab(el) {
+  document.querySelectorAll('.tab').forEach((t,i) => {
+    t.classList.remove('active');
+    if (t === el) currentTab = i;
+  });
+  el.classList.add('active');
+
+  const isWangshang = currentTab === 3;
+  document.getElementById('tableWrap').style.display = isWangshang ? 'none' : 'block';
+  document.getElementById('wangshangTable').style.display = isWangshang ? 'block' : 'none';
+  document.getElementById('exportWangshang').style.display = isWangshang ? 'inline-flex' : 'none';
+  document.getElementById('billTitle').textContent = el.innerText.replace('新', '').trim();
+}
+
+function openDownloadModal() {
+  document.getElementById('modalOverlay').classList.add('show');
+}
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('show');
+}
+function closeOnOverlay(e) {
+  if (e.target === document.getElementById('modalOverlay')) closeModal();
+}
+function selectFormat(el) {
+  document.querySelectorAll('.format-opt').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+}
+function confirmDownload() {
+  closeModal();
+  showToast('✅ 网商账单流水下载中，请稍候...');
+}
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// Field checkbox styling
+document.querySelectorAll('.field-checkbox input').forEach(cb => {
+  cb.addEventListener('change', () => {
+    cb.closest('.field-checkbox').classList.toggle('checked', cb.checked);
+  });
+});
+
+renderTable();
+renderWangshang();
+</script>
+</body>
+</html>
